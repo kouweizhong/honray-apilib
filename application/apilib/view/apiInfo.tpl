@@ -82,17 +82,17 @@
                             {foreach name="methodDoc" item="vo" key="k" }
                                 {switch name="vo.method"}
                                 {case value="get"}
-                                    <li><a href="#get"><span class="label label-success">GET</span> {$vo.title}</a></li>
+                                    <li><a href="#{$vo.method}"><span class="label label-success">GET</span> {$vo.title}</a></li>
                                 {/case}
                                 {case value="post"}
-                                    <li><a href="#post"><span class="label label-warning">POST</span> {$vo.title}</a>
+                                    <li><a href="#{$vo.method}"><span class="label label-warning">POST</span> {$vo.title}</a>
                                     </li>
                                 {/case}
                                 {case value="put"}
-                                    <li><a href="#put"> <span class="label label-info">PUT</span> {$vo.title}</a></li>
+                                    <li><a href="#{$vo.method}"> <span class="label label-info">PUT</span> {$vo.title}</a></li>
                                 {/case}
                                 {case value="delete"}
-                                    <li><a href="#delete"><span class="label  label-danger">DELETE</span> {$vo.title}
+                                    <li><a href="#{$vo.method}"><span class="label  label-danger">DELETE</span> {$vo.title}
                                         </a>
                                     </li>
                                 {/case}
@@ -130,7 +130,7 @@
     <!--methodDoc-->
     {foreach name="methodDoc" item="vo" key="k" }
         <li class="line dk"></li>
-        <div id="{$k}" class="row">
+        <div id="{$vo.method}" class="row">
             <div class="ibox float-e-margins">
                 <div class="ibox-title" data-toggle="collapse" data-target="#content-{$k}">
 
