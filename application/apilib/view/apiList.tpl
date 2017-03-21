@@ -32,18 +32,16 @@
                 <li class="nav-header">
                     <div class="dropdown profile-element">
                         <a data-toggle="dropdown" class="dropdown-toggle" href="#">
-                                <span class="clear">
-                                    <span class="block m-t-xs" style="font-size:20px;">
-                                        <strong class="font-bold">{$titleDoc}</strong>
-                                    </span>
+                            <span class="clear">
+                                <span class="block m-t-xs" style="font-size:20px;">
+                                    <strong class="font-bold">{$titleDoc}</strong>
                                 </span>
+                            </span>
                         </a>
                     </div>
                     <div class="logo-element">{$titleDoc}
                     </div>
                 </li>
-
-
                 <li>
                     <a class="J_menuItem" href="{:url('main')}" >
                         <i class="fa fa-home"></i>
@@ -52,8 +50,6 @@
                 </li>
                 <li class="line dk"></li>
                 {$menu}
-
-
             </ul>
         </div>
     </nav>
@@ -66,7 +62,6 @@
     </div>
     <!--右侧部分结束-->
 </div>
-
 <!-- 全局js -->
 <script src="__STATIC__/hadmin/js/jquery.min.js?v=2.1.4"></script>
 <script src="__STATIC__/hadmin/js/bootstrap.min.js?v=3.3.6"></script>

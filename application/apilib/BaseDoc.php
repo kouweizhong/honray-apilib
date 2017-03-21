@@ -1,12 +1,7 @@
 <?php
 // +----------------------------------------------------------------------
-// | When work is a pleasure, life is a joy!
+// | Author: linchuangbin <linchuangbin@honraytech.com>
 // +----------------------------------------------------------------------
-// | Company: YG | User: ShouKun Liu  |  Email:24147287@qq.com  | Time:2017/2/28 18:08
-// +----------------------------------------------------------------------
-// | TITLE: 文档
-// +----------------------------------------------------------------------
-
 
 namespace app\apilib;
 
@@ -35,10 +30,7 @@ class BaseDoc extends Common
      */
     public static $dataFieldMaps = [
         'name' => '参数名',
-        'require' => '必须',
         'type' => '类型',
-        'default' => '默认值',
-        'range' => '范围',
         'desc' => '说明',
     ];
 
@@ -114,14 +106,51 @@ class BaseDoc extends Common
      */
     public static function getApiDocList()
     {
-        //todo 可以写配置文件或数据
-        $apiList = Config::get('api_doc');
+        $cat = new \com\Category('admin_doc', array('id', 'parent', 'name', 'title'));
+        $data = $cat->getList('', 0, 'id');
+        if (empty($data)) {
+            // 测试数据
+            $apiList[0] = [
+                'name' => '权限模块', 
+                'id' => '1', 
+                'parent' => '0', 
+                'module' => '', 
+                'controller' => ''
+            ]; 
+        } else {
+            foreach ($data as $k => $v) {
+                $apiList[$v['id']]['id'] = $v['id'];
+                $apiList[$v['id']]['name'] = $v['name'];
+                $apiList[$v['id']]['parent'] = $v['parent'];
+                $apiList[$v['id']]['module'] = $v['module'];
+                $apiList[$v['id']]['controller'] = $v['controller'];
+            }
+        }
         return $apiList;
     }
 
     public static function getApiDocOne($id)
     {
-        $apiList = Config::get('api_doc');
+        $cat = new \com\Category('admin_doc', array('id', 'parent', 'name', 'title'));
+        $data = $cat->getList('', 0, 'id');
+        if (empty($data)) {
+            // 测试数据
+            $apiList[0] = [
+                'name' => '权限模块', 
+                'id' => '1', 
+                'parent' => '0', 
+                'module' => '', 
+                'controller' => ''
+            ]; 
+        } else {
+            foreach ($data as $k => $v) {
+                $apiList[$v['id']]['id'] = $v['id'];
+                $apiList[$v['id']]['name'] = $v['name'];
+                $apiList[$v['id']]['parent'] = $v['parent'];
+                $apiList[$v['id']]['module'] = $v['module'];
+                $apiList[$v['id']]['controller'] = $v['controller'];
+            }
+        }
         return $apiList[$id];
     }
 
@@ -171,6 +200,7 @@ class BaseDoc extends Common
             return false;
         }
         $docComment = $reflection->getDocComment();
+
         return self::getDoc($docComment);
     }
 
@@ -181,19 +211,19 @@ class BaseDoc extends Common
      */
     public static function getMethodListDoc($className)
     {
-        //获取参数规则
-        $rules = $className::getRules();
         $restMethodList = self::getRestMethodList($className);
         foreach ($restMethodList as $method) {
-            if ($method == 'getRules') continue;
             $reflection = new \ReflectionMethod($className, $method . self::METHOD_POSTFIX);
             $docComment = $reflection->getDocComment();
-            //获取title,url,mothod,return等说明
-            $methodDoc[$method] = self::getDoc($docComment);
-            if (!empty($rules[$method])){
-                $methodDoc[$method]['rules'] = array_merge($rules['all'], $rules[$method]);
+            //获取title,url,mothod,return, param等说明
+            $arr = self::getDoc($docComment);
+            $methodDoc[$method] = $arr;
+            unset($methodDoc[$method]['param']);
+            if (!empty($arr['param'])){
+                $methodDoc[$method]['rules'] = $arr['param'];
             }
         }
+
         return $methodDoc;
     }
 
@@ -222,24 +252,12 @@ class BaseDoc extends Common
     private static function getDoc($docComment)
     {
         $docCommentArr = explode("\n", $docComment);
-        foreach ($docCommentArr as $comment) {
+        foreach ($docCommentArr as $k => $comment) {
             $comment = trim($comment);
             //接口名称
             $pos = stripos($comment, '@title');
             if ($pos !== false) {
                 $data['title'] = trim(substr($comment, $pos + 6));
-                continue;
-            }
-            //接口描述
-            $pos = stripos($comment, '@desc');
-            if ($pos !== false) {
-                $data['desc'] = trim(substr($comment, $pos + 5));
-                continue;
-            }
-            //接口说明文档
-            $pos = stripos($comment, '@readme');
-            if ($pos !== false) {
-                $data['readme'] = trim(substr($comment, $pos + 7));
                 continue;
             }
             //接口url
@@ -255,48 +273,65 @@ class BaseDoc extends Common
                 continue;
             }
 
-            //接口url versions
-            $pos = stripos($comment, '@version');
-            if ($pos !== false) {
-                $data['version'] = trim(substr($comment, $pos + 8));
+            // 请求字段说明
+            // @param注释
+            $pos = stripos($comment, '@param');
+            //以上都没有匹配到直接下一行
+            if ($pos !== false) {            
+                $paramCommentArr = explode(' ', substr($comment, $pos + 7));
+                //将数组中的空值过滤掉，同时将需要展示的值返回
+                $paramCommentArr = array_values(array_filter($paramCommentArr));
+                //如果小于3个也过滤
+                if (count($paramCommentArr) < 2) {
+                    continue;
+                }
+                if (!isset($paramCommentArr[2])) {
+                    $paramCommentArr[2] = '';    //可选的字段说明
+                } else {
+                    //兼容处理有空格的注释
+                    $paramCommentArr[2] = implode(' ', array_slice($paramCommentArr, 2));
+                }
+                $paramCommentArr[0] = (in_array(strtolower($paramCommentArr[0]), array_keys(self::$typeMaps))) ? self::$typeMaps[strtolower($paramCommentArr[0])] : $paramCommentArr[0];
+                $data['param'][] = [
+                    'name' => $paramCommentArr[1],
+                    'type' => $paramCommentArr[0],
+                    'desc' => $paramCommentArr[2],
+                ];
                 continue;
             }
-
             //返回字段说明
             //@return注释
             $pos = stripos($comment, '@return');
             //以上都没有匹配到直接下一行
-            if ($pos === false) {
+            if ($pos !== false) {
+                
+                $returnCommentArr = explode(' ', substr($comment, $pos + 8));
+                //将数组中的空值过滤掉，同时将需要展示的值返回
+                $returnCommentArr = array_values(array_filter($returnCommentArr));
+                //如果小于3个也过滤
+                if (count($returnCommentArr) < 2) {
+                    continue;
+                }
+                if (!isset($returnCommentArr[2])) {
+                    $returnCommentArr[2] = '';    //可选的字段说明
+                } else {
+                    //兼容处理有空格的注释
+                    $returnCommentArr[2] = implode(' ', array_slice($returnCommentArr, 2));
+                }
+                $returnCommentArr[0] = (in_array(strtolower($returnCommentArr[0]), array_keys(self::$typeMaps))) ? self::$typeMaps[strtolower($returnCommentArr[0])] : $returnCommentArr[0];
+                $data['return'][] = [
+                    'name' => $returnCommentArr[1],
+                    'type' => $returnCommentArr[0],
+                    'desc' => $returnCommentArr[2],
+                ];
                 continue;
             }
-            $returnCommentArr = explode(' ', substr($comment, $pos + 8));
-            //将数组中的空值过滤掉，同时将需要展示的值返回
-            $returnCommentArr = array_values(array_filter($returnCommentArr));
-            //如果小于3个也过滤
-            if (count($returnCommentArr) < 2) {
-                continue;
-            }
-            if (!isset($returnCommentArr[2])) {
-                $returnCommentArr[2] = '';    //可选的字段说明
-            } else {
-                //兼容处理有空格的注释
-                $returnCommentArr[2] = implode(' ', array_slice($returnCommentArr, 2));
-            }
-            $returnCommentArr[0] = (in_array(strtolower($returnCommentArr[0]), array_keys(self::$typeMaps))) ? self::$typeMaps[strtolower($returnCommentArr[0])] : $returnCommentArr[0];
-            $data['return'][] = [
-                'name' => $returnCommentArr[1],
-                'type' => $returnCommentArr[0],
-                'desc' => $returnCommentArr[2],
-            ];
-
         }
         $data['title'] = (isset($data['title'])) ? $data['title'] : '';
-        $data['desc'] = (isset($data['desc'])) ? $data['desc'] : '';
-        $data['readme'] = (isset($data['readme'])) ? $data['readme'] : '';
-        $data['return'] = (isset($data['return'])) ? $data['return'] : [];
         $data['url'] = (isset($data['url'])) ? $data['url'] : [];
         $data['method'] = (isset($data['method'])) ? $data['method'] : [];
-        $data['version'] = (isset($data['version'])) ? $data['version'] : [];
+        $data['param'] = (isset($data['param'])) ? $data['param'] : [];        
+        $data['return'] = (isset($data['return'])) ? $data['return'] : []; 
         return $data;
     }
 

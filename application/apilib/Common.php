@@ -1,10 +1,6 @@
 <?php
 // +----------------------------------------------------------------------
-// | When work is a pleasure, life is a joy!
-// +----------------------------------------------------------------------
-// | Company: YG | User: ShouKun Liu  |  Email:24147287@qq.com  | Time:2017/2/21 10:58
-// +----------------------------------------------------------------------
-// | TITLE: 公共的
+// | Author: linchuangbin <linchuangbin@honraytech.com>
 // +----------------------------------------------------------------------
 
 
@@ -50,15 +46,14 @@ class Common extends Rest
      * @var array
      */
     public static $typeMaps = [
-        'string'    => '字符串',
-        'int'       => '整型',
-        'float'     => '浮点型',
-        'boolean'   => '布尔型',
-        'date'      => '日期',
-        'array'     => '数组',
-        'fixed'     => '固定值',
-        'enum'      => '枚举类型',
-        'object'    => '对象',
+        'number'         => 'number',
+        'string'         => 'string',
+        'object'         =>'object',
+        'boolean'        => 'boolean',
+        'array<number>'  => 'array<number>',
+        'array<string>'  => 'array<string>',
+        'array<object>'  => 'array<object>',
+        'array<boolean>' => 'array<boolean>',
     ];
 
     public function __construct()
@@ -168,6 +163,4 @@ class Common extends Rest
 
         return $this->setResponseArr('0', 'success', $data)->response('', '', $code);
     }
-
-
 }

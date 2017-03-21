@@ -6,7 +6,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-
     <title>{$classDoc.title}-{$titleDoc}</title>
     <meta name="keywords" content="">
     <meta name="description" content="">
@@ -23,6 +22,12 @@
         .markdown p img {
             max-width: 100%;
         }
+        .row-green {
+            background-color: #f4fff4;
+        }
+        .row-blue {
+            background-color: #e7fbff;
+        }
     </style>
 
     <link href="__STATIC__/hadmin/css/style.css?v=4.1.0" rel="stylesheet">
@@ -34,7 +39,6 @@
 <div class="wrapper wrapper-content animated fadeInRight">
 
     <div class="row">
-
         <div class="ibox-content  ">
             <div class="text-center ">
                 <h2 class="">{$classDoc.title}</h2>
@@ -43,34 +47,8 @@
         <div class="hr-line-dashed"></div>
         <div class="col-xs-9">
             <div class="panel-group" id="accordion">
-                <div class="panel panel-default">
-
-                    <div id="collapseOne" class="panel-collapse collapse in">
-                        <div class="panel-body">
-                            <div class="row">
-                                <div class="col-sm-6">
-                                    <dl class="dl-horizontal">
-                                        <dt>请求地址：</dt>
-                                        <dd><a target="_blank" href="__ROOT__{$classDoc.url}">__ROOT__{$classDoc.url}</a> </dd>
-                                    </dl>
-                                </div>
-                                <div class="col-sm-6" id="cluster_info">
-                                    <dl class="dl-horizontal">
-                                        <dt>版本：</dt>
-                                        <dd>{$classDoc.version}</dd>
-                                    </dl>
-                                </div>
-                            </div>
-                            <div class="well">
-                                {$classDoc.desc}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
             </div>
         </div>
-
         <div class="col-xs-93">
             <div class="ibox float-e-margins">
                 <div class="ibox-content">
@@ -107,25 +85,6 @@
                 </div>
             </div>
         </div>
-        {notempty  name="classDoc.readme"}
-            <div class="row" >
-            <div class="col-lg-12">
-                <div class="ibox float-e-margins">
-                    <div class="ibox-title" data-toggle="collapse" data-target="#markdown-class">
-                        <h5>接口说明文档</h5>
-                        <div class="ibox-tools">
-                            <a class="collapse-link">
-                                <i class="fa fa-chevron-up"></i>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="ibox-content markdown " id="markdown-class">
-
-                    </div>
-                </div>
-            </div>
-        </div>
-        {/notempty}
     </div>
     <!--methodDoc-->
     {foreach name="methodDoc" item="vo" key="k" }
@@ -171,28 +130,6 @@
                     </div>
                 </div>
                 {/notempty}
-                <!--title,desc-->
-                <!--readme-->
-                {notempty  name="vo.readme"}
-                    <div class="row">
-                    <div class="col-lg-12">
-                        <div class="ibox float-e-margins">
-                            <div class="ibox-title" data-toggle="collapse" data-target="#markdown-{$k}">
-                                <h5>详细说明</h5>
-                                <div class="ibox-tools">
-                                    <a class="collapse-link">
-                                        <i class="fa fa-chevron-up"></i>
-                                    </a>
-                                </div>
-                            </div>
-                            <div class="ibox-content markdown " id="markdown-{$k}">
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {/notempty}
-                <!--readme-->
                 <!--request-->
                 {notempty  name="vo.rules"}
                 <div class="ibox-title" data-toggle="collapse" data-target="#data-{$k}">
@@ -244,7 +181,6 @@
                             <!-- Example Toolbar -->
                             <div class="example-wrap">
                                 <div class="example">
-
                                     <table id="returnTable-{$k}" data-mobile-responsive="true">
                                         <thead>
                                         <tr>
@@ -293,60 +229,66 @@
 
 </script>
 {foreach name="methodDoc" item="vo" key="k" }
-
     <script>
         (function (document, window, $) {
             'use strict';
-
-
             (function () {
-                var dataTableUrl =  "{:url('tableData',['id'=>$classDoc.id,'method'=>$k,'dataType'=>'data'])}";
-                var returnTableUrl =  "{:url('tableData',['id'=>$classDoc.id,'method'=>$k,'dataType'=>'return'])}";
+                var dataTableUrl = "{:url('admin/doc/tableData',['id'=>$classDoc.id,'method'=>$k,'dataType'=>'data'])}";
+                var returnTableUrl = "{:url('admin/doc/tableData',['id'=>$classDoc.id,'method'=>$k,'dataType'=>'return'])}";
                 $('#dataTable-{$k}').bootstrapTable({
                     url:dataTableUrl,
                     search: true,
                     showRefresh: false,
-                    showToggle: true,
+                    showToggle: false,
                     showColumns: true,
                     iconSize: 'outline',
                     icons: {
                         refresh: 'glyphicon-repeat',
                         toggle: 'glyphicon-list-alt',
                         columns: 'glyphicon-list'
+                    },
+                    onLoadSuccess: function() {
+                        $('#dataTable-{$k} tr').each(function(key, value){
+                            var text = $(this).find('td:first-child').text()
+                            if (text.indexOf('——') > -1) {
+                                $(this).addClass('row-blue')
+                                $(this).find('td:first-child').html(text.replace('——', '&nbsp;&nbsp;&nbsp;&nbsp;'))
+                            } else if (text.indexOf('—') > -1) {
+                                $(this).addClass('row-green')
+                                $(this).find('td:first-child').html(text.replace('—', '&nbsp;&nbsp;'))
+                            }
+                        })
                     }
                 });
-
                 $('#returnTable-{$k}').bootstrapTable({
                     url:returnTableUrl,
                     search: true,
                     showRefresh: false,
-                    showToggle: true,
+                    showToggle: false,
                     showColumns: true,
                     iconSize: 'outline',
                     icons: {
                         refresh: 'glyphicon-repeat',
                         toggle: 'glyphicon-list-alt',
                         columns: 'glyphicon-list'
+                    },
+                    onLoadSuccess: function () {
+                        $('#returnTable-{$k} tr').each(function(key, value){
+                            var text = $(this).find('td:first-child').text()
+                            if (text.indexOf('——') > -1) {
+                                $(this).addClass('row-blue')
+                                $(this).find('td:first-child').html(text.replace('——', '&nbsp;&nbsp;&nbsp;&nbsp;'))
+                            } else if (text.indexOf('—') > -1) {
+                                $(this).addClass('row-green')
+                                $(this).find('td:first-child').html(text.replace('—', '&nbsp;&nbsp;'))
+                            }
+                        })
                     }
                 });
             })();
-
-
         })(document, window, jQuery);
     </script>
-
-    <script>
-        //获取method md
-
-        $.get("__ROOT__{$vo.readme}", function (data) {
-            $('#markdown-{$k}').html(markdown.toHTML(data))
-        });
-
-    </script>
-{/foreach}
-
-
+{/foreach}  
 
 </body>
-
 </html>
